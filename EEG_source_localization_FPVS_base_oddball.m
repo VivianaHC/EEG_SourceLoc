@@ -1,13 +1,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Source localization in EEG recordings using frequency domain and time 
-% domain. Input data are general visual response at the harmonics 
-% f0 = 6, 12, 18, 24 Hz and the oddball response of face individuation 
-% response at the harmonics f1 = 1.2, 2.4, 3.6, 4.8 Hz.
-% Frequency domain: FFT EEG transformation and harmonic peaks (f1, f0) are
-% taken at the frequency of general visual response (f0) and oddball face
-% individuation response (f1).
-% Time domain: Band pass filtering at the frequency of general visual (f0) 
-% and oddball face individuation (f1) response   
+% domain. Input data are general visual response at harmonics f0 = 6, 12, 
+% 18, 24 Hz and face individuation response at harmonics f1 = 1.2, 2.4, 3.6, 
+% 4.8 Hz. 
+% Frequency domain: FFT EEG transformation using peaks taken at the harmonic 
+% frequencies of general visual response (f0) and face individuation response 
+% (f1). 
+% Time domain: Band pass filtering at the harmonic frequencies of general 
+% visual (f0) and face individuation (f1) responses   
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 clear all
@@ -22,7 +22,7 @@ LF = LF_full_scalp(scalp_sens_idxBS128,:);
 source_space = size(LF,2)/3;
 
 %% EEG recordings 
-%modeldir = '/home/viviana/Documents/MATLAB/article/Data-review-FPVS-oddball/*.mat';
+% check if the path is correct!
 modeldir = 'C:\Users\admin-sm\Documents\MATLAB\EEG-Source-localization\data\Data-review-FPVS-oddball\*.mat';
 matFiles = dir(modeldir);
 load eeg_info % sr and freq for each EEG
@@ -33,45 +33,41 @@ elnames = {header.chanlocs(1:nchan).labels}.';
 %% Normalization of lead-field (forward model)
 %LF_Norm = LF_normalization(LF);
 
+%% Localization to each EEG file
 for i = 1:length(matFiles)
 
 baseFileName = matFiles(i).name;
 load(baseFileName)   
 data = squeeze(data);
 nsess = size(data,1);
-n=size(data,3);
-fs=[x_info(i).fs].';%256/250
-sessvelec=[];
+n = size(data,3);
+fs = [eeg_info(i).fs].';%256/250
+sessvelec = [];
 
-%% 
+%% Organize the sessions recorded 
 for isess=1:nsess
-    sessvelec(:,:,isess)=double(squeeze(data(isess,1:nchan,:)));
+    sessvelec(:,:,isess) = double(squeeze(data(isess,1:nchan,:)));
 end
-%% average the sessions (optional) or process sessions separately
-velec=mean(sessvelec,3);
-%velec=velec(biosemi_idx',:);
+%% Average the sessions (optional) or process sessions separately
+velec = mean(sessvelec,3);
 
-%% normalization on the averaged sessions
-%velec=velec_avg/(norm(velec_avg,'fro'));
-%velec=sessvelec(:,:,isess)/(norm(sessvelec(:,:,isess),'fro'));
+%% Normalization on the averaged sessions
+%velec = velec/(norm(velec,'fro'));
 
-%% frequency transformation/visualization
-velecf=conj(fft(velec')');
-Rf=fs/n; %freq resolution
+%% Frequency transformation
+velecf = conj(fft(velec')');
+Rf = fs/n; %freq resolution
 
-%% Signal wiew
-%EEGviewer(abs(velecf),1/Rf,elnames)
-%EEGviewer(abs(velecf),1/Rf)
-%saveas(1,['Signal_File' num2str(i) '_' num2str(baseFileName) '.fig'])
-%close 
+%% Signal frequency domain visualization
+%EEGviewer(abs(velecf), 1/Rf, elnames)
 
 %% frequency peaks selection
-odd=[x_info(i).oddball_freq].';
-f1=[odd odd*2 odd*3 odd*4];%face individuation
-base=[x_info(i).base_freq].';
-f0=[base base*2 base*3 base*4];%base visual response
-indf1=round(f1/Rf+1);
-indf0=round(f0/Rf+1);   
+odd = [eeg_info(i).oddball_freq].';
+f1 = [odd odd*2 odd*3 odd*4]; %frequencies at face individuation response
+base = [eeg_info(i).base_freq].';
+f0 = [base base*2 base*3 base*4];%frequencies at general visual response
+indf1 = round(f1/Rf+1);
+indf0 = round(f0/Rf+1);   
 
 % %% Electrodes selection with resolute peaks at oddball harmonics 1.2,2.4,3.6,4.8 Hz
 % q=1;
