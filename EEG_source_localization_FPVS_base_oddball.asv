@@ -74,8 +74,7 @@ f0 = [base base*2 base*3 base*4];%freq peaks at general visual response
 indf1 = round(f1/Rf+1);
 indf0 = round(f0/Rf+1);   
 
-%% Sum up the power spectrum of the frequencies in f1 and f0 for each EEG 
-%% file for scalp map view purpose 
+%% Scalp map view averaging across EEGs
 velecf1_avgview=velecf1_avgview+velecf(:,indf1);
 velecf0_avgview=velecf0_avgview+velecf(:,indf0);
 
@@ -132,18 +131,18 @@ save(['EEGloc_fvps_SBR_freq_T_RAP_time_f1_f0_',num2str(nchan),'el_',num2str(sour
 
 end
 
-%% Scalp map view representing the average from EEG files, summing up the 
-%% power spectrum of the frequencies in f1 and f0 across EEG files
+%% Scalp view average from EEG files
 figure,
 scalpmap_mesh(double(abs(sum(velecf1_avgview,2))),sens.elecpos,scalp.pnt,scalp.tri)
-axis off, view(-90,0), colorbar off
+axis off
+view(-90,0)
+colorbar off
 
 figure,
 scalpmap_mesh(double(abs(sum(velecf0_avgview,2))),sens.elecpos,scalp.pnt,scalp.tri)
-axis off, view(-90,0), colorbar off
-
-%% To be fixed
-
+axis off
+view(-90,0)
+colorbar off
 
 %% Histogram
 %% freq
