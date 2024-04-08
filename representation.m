@@ -1,0 +1,210 @@
+function representation
+%REPRESENTATION Source localization representations 
+%% Histograms
+
+%% freq
+source_space = 2634;
+histf1_sbr = zeros(1,source_space);
+histf0_sbr = zeros(1,source_space);
+ampf1_sbr = zeros(source_space,4);
+ampf0_sbr = zeros(source_space,4);
+
+for ifiles = 1:129
+    load(['EEGloc_fvps_SBR_freq_T_RAP_time_f1_f0_',num2str(ifiles),'.mat'])
+    histf1_sbr(freq.inddipsbrf1h) = histf1_sbr(freq.inddipsbrf1h)+1;
+    histf0_sbr(freq.inddipsbrf0h) = histf0_sbr(freq.inddipsbrf0h)+1;
+    ampf1_sbr(freq.inddipsbrf1h,:) = ampf1_sbr(freq.inddipsbrf1h,:)+((freq.ampsbrf1h(:,1:4).^2)+(freq.ampsbrf1h(:,5:8).^2)).^(1/2);
+    ampf0_sbr(freq.inddipsbrf0h,:) = ampf0_sbr(freq.inddipsbrf0h,:)+((freq.ampsbrf0h(:,1:4).^2)+(freq.ampsbrf0h(:,5:8).^2)).^(1/2);     
+end
+
+%% time
+histf1t_rap = zeros(1,source_space);
+histf0t_rap = zeros(1,source_space);
+ampf1t_rap = zeros(source_space,256);
+ampf0t_rap = zeros(source_space,256);
+
+histf1t_trap = zeros(1,source_space);
+histf0t_trap = zeros(1,source_space);
+ampf1t_trap = zeros(source_space,256);
+ampf0t_trap = zeros(source_space,256);
+
+for ifiles=1:129
+load(['EEGloc_fvps_SBR_freq_T_RAP_time_f1_f0_',num2str(ifiles),'.mat'])
+    histf1t_rap(time.inddiprapf1th) = histf1t_rap(time.inddiprapf1th)+1; 
+    histf0t_rap(time.inddiprapf0th) = histf0t_rap(time.inddiprapf0th)+1; 
+    histf1t_trap(time.inddiptrapf1th) = histf1t_trap(time.inddiptrapf1th)+1; 
+    histf0t_trap(time.inddiptrapf0th) = histf0t_trap(time.inddiptrapf0th)+1;
+    % resampling
+    ampf1t_r = []; ampf0t_r = []; ampf1t_t = []; ampf0t_t = [];
+    if size(time.amprapf1th,2) <= 250
+        for l = 1:size(time.amprapf1th,1)
+            ampf1t_r(l,:) = interp1(linspace(0,1,length(time.amprapf1th)),time.amprapf1th(l,:),linspace(0,1,size(ampf1t_rap,2)));
+        end
+        ampf1t_rap(time.inddiprapf1th,:) = ampf1t_rap(time.inddiprapf1th,:)+((ampf1t_r.^2).^(1/2));
+    else
+        ampf1t_rap(time.inddiprapf1th,:) = ampf1t_rap(time.inddiprapf1th,:)+((time.amprapf1th.^2).^(1/2));
+    end 
+    if size(time.amprapf0th,2) <= 250
+        for l = 1:size(time.amprapf0th,1)
+            ampf0t_r(l,:) = interp1(linspace(0,1,length(time.amprapf0th)),time.amprapf0th(l,:),linspace(0,1,size(ampf0t_rap,2)));
+        end
+        ampf0t_rap(time.inddiprapf0th,:) = ampf0t_rap(time.inddiprapf0th,:)+((ampf0t_r.^2).^(1/2));
+    else
+        ampf0t_rap(time.inddiprapf0th,:) = ampf0t_rap(time.inddiprapf0th,:)+((time.amprapf0th.^2).^(1/2));
+    end
+    if size(time.amptrapf1th,2) <= 250
+        for l = 1:size(time.amptrapf1th,1)
+            ampf1t_t(l,:) = interp1(linspace(0,1,length(time.amptrapf1th)),time.amptrapf1th(l,:),linspace(0,1,size(ampf1t_trap,2)));
+        end
+            ampf1t_trap(time.inddiptrapf1th,:) = ampf1t_trap(time.inddiptrapf1th,:)+((ampf1t_t.^2).^(1/2));
+    else
+            ampf1t_trap(time.inddiptrapf1th,:) = ampf1t_trap(time.inddiptrapf1th,:)+((time.amptrapf1th.^2).^(1/2));
+    end 
+    if size(time.amptrapf0th,2) <= 250
+       for l = 1:size(time.amptrapf0th,1)
+           ampf0t_t(l,:) = interp1(linspace(0,1,length(time.amptrapf0th)),time.amptrapf0th(l,:),linspace(0,1,size(ampf0t_trap,2)));
+       end
+       ampf0t_trap(time.inddiptrapf0th,:) = ampf0t_trap(time.inddiptrapf0th,:)+((ampf0t_t.^2).^(1/2));
+    else
+       ampf0t_trap(time.inddiptrapf0th,:) = ampf0t_trap(time.inddiptrapf0th,:)+((time.amptrapf0th.^2).^(1/2));
+    end
+end
+
+%% Placements of reconstructed sources
+thrnbs = 6;
+
+figure('Name','SBR1 f1f_dips')
+ft_plot_mesh(vol.bnd(:),'facealpha',0.1, 'edgealpha', 0.1);hold on
+scatter3(full_dip(histf1_sbr>thrnbs,1),full_dip(histf1_sbr>thrnbs,2),full_dip(histf1_sbr>thrnbs,3),100,histf1_sbr(histf1_sbr>thrnbs)','filled')
+colorbar
+
+figure('Name','SBR f0f_dips')
+ft_plot_mesh(vol.bnd(:),'facealpha',0.1, 'edgealpha', 0.1);hold on
+scatter3(full_dip(histf0_sbr>thrnbs,1),full_dip(histf0_sbr>thrnbs,2),full_dip(histf0_sbr>thrnbs,3),100,histf0_sbr(histf0_sbr>thrnbs)','filled')
+colorbar
+
+%% Convolution
+load LF3D_Colin27_9mm vol full_dip LF_full_scalp
+load('brain.mat')
+
+for ip = 1:length(full_dip)
+    ind = find(sqrt(sum((full_dip-full_dip(ip,:)).^2,2))<13);
+    hist2f1_sbr(ip) = mean(histf1_sbr(ind));
+    hist2f0_sbr(ip) = mean(histf0_sbr(ind));
+    amp2f1_sbr(ip) = sum(sum(ampf1_sbr(ind,:),2));
+    amp2f0_sbr(ip) = sum(sum(ampf0_sbr(ind,:),2));  
+
+    hist2f1t_rap(ip) = mean(histf1t_rap(ind));
+    hist2f0t_rap(ip) = mean(histf0t_rap(ind));
+    amp2f1t_rap(ip) = sum(sum(ampf1t_rap(ind,:),2));
+    amp2f0t_rap(ip) = sum(sum(ampf0t_rap(ind,:),2));  
+    
+    hist2f1t_trap(ip) = mean(histf1t_trap(ind));
+    hist2f0t_trap(ip) = mean(histf0t_trap(ind));
+    amp2f1t_trap(ip) = sum(sum(ampf1t_trap(ind,:),2));
+    amp2f0t_trap(ip) = sum(sum(ampf0t_trap(ind,:),2));  
+end
+
+%% Interpolation
+x = [min(brain.pnt(:,1)):max(brain.pnt(:,1))];
+y = [min(brain.pnt(:,2)):max(brain.pnt(:,2))];
+z = [min(brain.pnt(:,3)):max(brain.pnt(:,3))];
+[X,Y,Z] = meshgrid(x,y,z);
+
+brain2.faces = brain.tri;
+brain2.vertices = brain.pnt;
+
+IN = inpolyhedron(brain2,x,y,z);
+IN = double(IN);
+IN(IN==0) = NaN;
+
+%% SBR
+F1 = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),hist2f1_sbr','natural','linear');
+vq1 = F1(X,Y,Z);
+
+figure('Name','SBR f1f')
+s = slice(X,Y,Z,vq1.*IN,[-100:100],[],[]); axis equal; set(s,'Edgecolor','None')
+axis off
+%set(gca,'clim',[0 30])
+
+F1a = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),amp2f1_sbr','natural','linear');
+vq1a = F1a(X,Y,Z);
+
+figure('Name','SBR f1f amplitude')
+s = slice(X,Y,Z,vq1a.*IN,[-100:100],[],[]); axis equal; set(s,'Edgecolor','None')
+axis off
+%set(gca,'clim',[0 10000000000000])
+
+F0 = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),hist2f0_sbr','natural','linear');
+vq0 = F0(X,Y,Z);
+
+figure('Name','SBR f0f')
+s = slice(X,Y,Z,vq0.*IN,[-100:100],[],[]);axis equal;set(s,'Edgecolor','None')
+axis off
+
+F0a = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),amp2f0_sbr','natural','linear');
+vq0a = F0a(X,Y,Z);
+
+figure('Name','SBR f0f amplitude')
+s = slice(X,Y,Z,vq0a.*IN,[-100:100],[],[]);axis equal;set(s,'Edgecolor','None')
+axis off
+
+%% RAP
+F1 = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),hist2f1t_rap','natural','linear');
+vq1 = F1(X,Y,Z);
+
+figure('Name','RAP f1t')
+s = slice(X,Y,Z,vq1.*IN,[-100:100],[],[]); axis equal; set(s,'Edgecolor','None')
+axis off
+
+F1a = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),amp2f1t_rap','natural','linear');
+vq1a = F1a(X,Y,Z);
+
+figure('Name','RAP f1t amplitude')
+s = slice(X,Y,Z,vq1a.*IN,[-100:100],[],[]); axis equal; set(s,'Edgecolor','None')
+axis off
+
+F0 = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),hist2f0t_rap','natural','linear');
+vq0 = F0(X,Y,Z);
+
+figure('Name','RAP f0t')
+s = slice(X,Y,Z,vq0.*IN,[-100:100],[],[]);axis equal;set(s,'Edgecolor','None')
+axis off
+
+F0a = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),amp2f0t_rap','natural','linear');
+vq0a = F0a(X,Y,Z);
+
+figure('Name','RAP f0t amplitude')
+s = slice(X,Y,Z,vq0a.*IN,[-100:100],[],[]);axis equal;set(s,'Edgecolor','None')
+axis off
+
+%% TRAP
+F1 = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),hist2f1t_trap','natural','linear');
+vq1 = F1(X,Y,Z);
+
+figure('Name','TRAP f1t')
+s = slice(X,Y,Z,vq1.*IN,[-100:100],[],[]); axis equal; set(s,'Edgecolor','None')
+axis off
+
+F1a = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),amp2f1t_trap','natural','linear');
+vq1a = F1a(X,Y,Z);
+
+figure('Name','TRAP f1t amplitude')
+s = slice(X,Y,Z,vq1a.*IN,[-100:100],[],[]); axis equal; set(s,'Edgecolor','None')
+axis off
+
+F0 = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),hist2f0t_trap','natural','linear');
+vq0 = F0(X,Y,Z);
+
+figure('Name','TRAP f0t')
+s = slice(X,Y,Z,vq0.*IN,[-100:100],[],[]);axis equal;set(s,'Edgecolor','None')
+axis off
+
+F0a = scatteredInterpolant(full_dip(:,1),full_dip(:,2),full_dip(:,3),amp2f0t_trap','natural','linear');
+vq0a = F0a(X,Y,Z);
+
+figure('Name','TRAP f0t amplitude')
+s = slice(X,Y,Z,vq0a.*IN,[-100:100],[],[]);axis equal;set(s,'Edgecolor','None')
+axis off
+
+end
