@@ -1,11 +1,9 @@
 function representation
-%REPRESENTATION Source localization representations: HISTOGRAM of the source
-% space from the localization across the EEGs. SCALP MAP with the placements
-% of reconstructed sources according to the number (fixed threshold) of the
-% times sources were localized across the localization in the EEGs. 
-% INTERPOLATION using the scalp map representation with the localized 
-% sources  
-
+%REPRESENTATION Source localization representations: histogram of the source
+% space from the localization across the EEGs across the source space 
+% scalp map placement of 
+% reconstructed sources that in average (across the EEGs loc) those were 
+% reconstructed above a fixed threshold. 
 
 %% Histograms
 
@@ -17,7 +15,7 @@ ampf1_sbr = zeros(source_space,4);
 ampf0_sbr = zeros(source_space,4);
 
 for ifiles = 1:129
-    load(['EEGloc_fvps_128el_2634s_SBR_and_OLSfreq_(T)RAPtime_f1_f0_128el_2634s_file_',num2str(ifiles),'.mat'])
+    load(['EEGloc_fvps_SBR_freq_T_RAP_time_f1_f0_',num2str(ifiles),'.mat'])
     histf1_sbr(freq.inddipsbrf1h) = histf1_sbr(freq.inddipsbrf1h)+1;
     histf0_sbr(freq.inddipsbrf0h) = histf0_sbr(freq.inddipsbrf0h)+1;
     ampf1_sbr(freq.inddipsbrf1h,:) = ampf1_sbr(freq.inddipsbrf1h,:)+((freq.ampsbrf1h(:,1:4).^2)+(freq.ampsbrf1h(:,5:8).^2)).^(1/2);
@@ -36,7 +34,7 @@ ampf1t_trap = zeros(source_space,256);
 ampf0t_trap = zeros(source_space,256);
 
 for ifiles=1:129
-load(['EEGloc_fvps_128el_2634s_SBR_and_OLSfreq_(T)RAPtime_f1_f0_128el_2634s_file_',num2str(ifiles),'.mat'])
+load(['EEGloc_fvps_SBR_freq_T_RAP_time_f1_f0_',num2str(ifiles),'.mat'])
     histf1t_rap(time.inddiprapf1th) = histf1t_rap(time.inddiprapf1th)+1; 
     histf0t_rap(time.inddiprapf0th) = histf0t_rap(time.inddiprapf0th)+1; 
     histf1t_trap(time.inddiptrapf1th) = histf1t_trap(time.inddiptrapf1th)+1; 
@@ -78,7 +76,6 @@ load(['EEGloc_fvps_128el_2634s_SBR_and_OLSfreq_(T)RAPtime_f1_f0_128el_2634s_file
 end
 
 %% Placements of reconstructed sources
-load LF3D_Colin27_9mm vol full_dip LF_full_scalp sensBS128 scalp_sens_idxBS128 
 thrnbs = 6;
 
 figure('Name','SBR1 f1f_dips')
