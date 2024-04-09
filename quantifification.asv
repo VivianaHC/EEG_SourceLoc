@@ -1,8 +1,7 @@
 %% Quantification of localization: average of the number of localized 
 % sources and Goodness of Fit (GOF) across EEGs for each algorithm 
 
-% check if the path is correct!
-modeldir = 'C:\Users\admin-sm\Documents\MATLAB\article\EEGLoc_fpvs_128el_2634_All_sess_avg\*.mat';
+modeldir = 'C:\Users\admin-sm\Documents\MATLAB\article\EEGLoc_fpvs_128el_2634_All_sess_avg\EEGloc_fvps_128el_2634s_SBR_and_OLSfreq_(T)RAPtime_f1_f0_128el_2634s_file_/*.mat';
 matFiles = dir(modeldir);
 
 for i = 1:length(matFiles)

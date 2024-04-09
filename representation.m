@@ -36,7 +36,8 @@ ampf1t_trap = zeros(source_space,256);
 ampf0t_trap = zeros(source_space,256);
 
 for ifiles=1:129
-load(['EEGloc_fvps_128el_2634s_SBR_and_OLSfreq_(T)RAPtime_f1_f0_128el_2634s_file_',num2str(ifiles),'.mat'])
+    % check on the file name!
+    load(['EEGloc_fvps_128el_2634s_SBR_and_OLSfreq_(T)RAPtime_f1_f0_128el_2634s_file_',num2str(ifiles),'.mat'])
     histf1t_rap(time.inddiprapf1th) = histf1t_rap(time.inddiprapf1th)+1; 
     histf0t_rap(time.inddiprapf0th) = histf0t_rap(time.inddiprapf0th)+1; 
     histf1t_trap(time.inddiptrapf1th) = histf1t_trap(time.inddiptrapf1th)+1; 
