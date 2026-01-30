@@ -14,7 +14,7 @@ if nargin < 5, m = 4; end
 meshpoints_orig = meshpoints;
 
 % Normalize electrode and mesh positions to unit sphere ---
-re_unit   = re ./ vecnorm(re,2,2);
+re_unit = re ./ vecnorm(re,2,2);
 mesh_unit = meshpoints ./ vecnorm(meshpoints,2,2);
 
 % Electrode-electrode kernel
@@ -43,7 +43,7 @@ colorbar; caxis([0 max(qc)]);
 view(90,0) %sagittal
 %view(0,0) %coronal
 %view(0,90) %axial
-title('Scalp map (spherical spline on original mesh)');
+title('Scalp map');
 end
 
 function G = spline_kernel(cosang, m)
