@@ -1,4 +1,4 @@
-% Simple EEG preprocessing + source localization
+% EEG preprocessing + source localization
 %
 % For each recording:
 % 1) load EEG
