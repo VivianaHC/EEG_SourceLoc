@@ -1,4 +1,3 @@
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % EEG preprocessing + source localization (frequency & time domain)
 % This script processes multiple EEG recordings:
 %   (1) Preprocessing per epoch:
