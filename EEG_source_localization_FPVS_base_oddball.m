@@ -1,5 +1,4 @@
 % EEG preprocessing + source localization
-%
 % For each recording:
 % 1) load EEG
 % 2) preprocess each epoch:
@@ -101,9 +100,6 @@ for i = 1:nSub
     all_f0_map{i} = sum(max(A0,0), 2);
 
     % Frequency-domain localization
-    %Yf1 = FFTavg(:, idxF1);
-    %Yf0 = FFTavg(:, idxF0);
-
     V1re = real(FFTavg(:, idxF1));
     V1im = imag(FFTavg(:, idxF1));  
     Yf1=[V1re V1im];
