@@ -9,7 +9,7 @@
 % 4) extract harmonics for F0 (base response) and F1 (face individuation)
 % 5) compute baseline-corrected harmonic amplitudes for scalp maps
 % 6) run frequency-domain localization (SBR-R1)
-% 7) run time-domain localization (TRAP/MUSIC)
+% 7) run time-domain localization (TRAP MUSIC)
 
 clear; close all; clc;
 
@@ -35,7 +35,7 @@ F1max = 5.0; % oddball harmonics only up to 5 Hz
 
 BandF1 = [0.5 5.0];
 BandF0 = [5.0 25.0];
-expGOF = 0.95;
+expGOF = 0.96;
 
 % File list
 lw5Files = dir(fullfile(datadir, '*.lw5'));
@@ -53,7 +53,7 @@ all_freq = cell(nSub,1);
 all_time = cell(nSub,1);
 all_f1_map = cell(nSub,1);
 all_f0_map = cell(nSub,1);
-
+tic
 for i = 1:nSub
     [~, stem] = fileparts(lw5Files(i).name);
     lw5path = fullfile(lw5Files(i).folder, lw5Files(i).name);
@@ -75,20 +75,20 @@ for i = 1:nSub
     X = permute(X, [2 3 1]); % -> [channels x samples x epochs]
     X = X(1:128,:,:); % keep Biosemi128
 
-    % Preprocess
-    for e = 1:size(X,3)
-        Xe = X(:,:,e);
-        Xe = Xe - mean(Xe, 2); % remove DC per channel
-        Xe = Xe - mean(Xe, 1); % common average reference
-        X(:,:,e) = Xe;
-    end
+    % Crop to integer number of oddball cycles
+    Nsamples = size(X,2);
+    T0 = Nsamples / Fs;
 
-    % Frequency domain
-    Ns = size(X,2);
-    FFTep = fft(X, [], 2);
-    FFTavg = mean(FFTep, 3);
+    nCycles = floor(T0 * F1); % integer number of cycles
+    Ns = round (nCycles * Fs / F1); % cropped sample count
+    X = X(:,1:Ns,:);
     Fr = Fs / Ns;
+
+    % Average in time before FFT
+    Xe = mean(X, 3);
+    FFTavg = fft(Xe, [], 2);
     %EEGviewer(abs(FFTavg), 1/Fr, elnames) % optional visualization
+    
     % Harmonic bins
     idxF0 = harmonic_bins(F0, Nharm, Fs, Fr);
     idxF1 = harmonic_bins(F1, Nharm, Fs, Fr, F1max);
@@ -101,8 +101,16 @@ for i = 1:nSub
     all_f0_map{i} = sum(max(A0,0), 2);
 
     % Frequency-domain localization
-    Yf1 = FFTavg(:, idxF1);
-    Yf0 = FFTavg(:, idxF0);
+    %Yf1 = FFTavg(:, idxF1);
+    %Yf0 = FFTavg(:, idxF0);
+
+    V1re = real(FFTavg(:, idxF1));
+    V1im = imag(FFTavg(:, idxF1));  
+    Yf1=[V1re V1im];
+
+    V0re = real(FFTavg(:, idxF0));
+    V0im = imag(FFTavg(:, idxF0));  
+    Yf0 = [V0re V0im];
 
     freq = struct();
     [freq.inddipsbr_f1, freq.orrsbr_f1, freq.ampsbr_f1, freq.GOFsbr_f1] = ...
@@ -112,7 +120,6 @@ for i = 1:nSub
         mySBRR1_AltOpt(Yf0, LF, 0.01);
 
     % Time-domain localization
-    Xe = mean(X, 3); % epoch average in time
     EEG_F1 = bandpass_eeg(Xe, Fs, BandF1);
     EEG_F0 = bandpass_eeg(Xe, Fs, BandF0);
 
@@ -129,9 +136,9 @@ for i = 1:nSub
     all_freq{i} = freq;
     all_time{i} = time;
 
-    fprintf('[%s] Fs = %.3f Hz | Fr = %.6f Hz\n', stem, Fs, Fr);
+    fprintf('[%s] Fs = %.1f Hz | Fr = %.4f Hz\n', stem, Fs, Fr);
 end
-
+toc
 % ------------------ Group scalp maps -------------------------------------
 plot_group_scalpmap(all_f1_map, nnewXYZ, ScalpSurfaceMesh, ...
     'Group F1 (F/n): summed baseline-corrected harmonic amplitude');
@@ -167,7 +174,7 @@ function A = harmonic_amplitude_bc(FFTavg, idx)
         k = idx(h);
         signalAmp = abs(FFTavg(:,k));
 
-        noiseBins = [k-5:k-3, k+3:k+5];
+        noiseBins = [k-7:k-3, k+3:k+7];
         noiseBins = noiseBins(noiseBins >= 2 & noiseBins <= kMax);
 
         if isempty(noiseBins)
@@ -199,3 +206,4 @@ function plot_group_scalpmap(allMaps, nnewXYZ, ScalpSurfaceMesh, ttl)
     colorbar;
     title(ttl);
 end
+
